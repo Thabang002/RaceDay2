@@ -46,7 +46,7 @@ Install the following software:
 - Git.
 
   ### CI workflows
-  
+![CI images](https://github.com/Thabang002/RaceDay2/blob/0a9fd7f0ad1e731e7350cdedf768e09b233958ee/Screenshot%202026-10-23%20232708.png)  
 
 ### Installation
 
