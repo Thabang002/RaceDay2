@@ -29,6 +29,15 @@ public class RaceDayDbContext : DbContext
         modelBuilder.Entity<EventOrganiser>()
             .HasKey(eo => new { eo.UserId, eo.EventId });
 
+        // Fix for "multiple cascade paths": a user can reach EventOrganisers directly
+        // (User -> EventOrganiser) and through Events (User -> Event -> EventOrganiser).
+        // SQL Server allows only one cascade path, so the direct one is set to Restrict.
+        modelBuilder.Entity<EventOrganiser>()
+            .HasOne(eo => eo.User)
+            .WithMany(u => u.EventOrganisers)
+            .HasForeignKey(eo => eo.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // One-to-one: Enrolment -> Result
         modelBuilder.Entity<Result>()
             .HasOne(r => r.Enrolment)
