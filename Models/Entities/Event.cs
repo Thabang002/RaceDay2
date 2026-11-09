@@ -1,4 +1,4 @@
-﻿using RaceDay.Models.Entities;
+using RaceDay.Models.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -41,6 +41,22 @@ public class Event
 
     [Column("is_deleted")]
     public bool IsDeleted { get; set; } = false;
+
+    // ---- Part 3 additions ----
+    [Column("distance_km", TypeName = "decimal(6,2)")]
+    public decimal? DistanceKm { get; set; }
+
+    [MaxLength(50)]
+    [Column("event_type")]
+    public string? EventType { get; set; }
+
+    /// <summary>Blob name of the banner image in Azure Blob Storage (e.g. banners/abc.jpg).</summary>
+    [MaxLength(300)]
+    [Column("banner_image")]
+    public string? BannerImage { get; set; }
+
+    [Column("results_published")]
+    public bool ResultsPublished { get; set; } = false;
 
     // Navigation
     [ForeignKey(nameof(LocationId))]

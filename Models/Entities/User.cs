@@ -1,4 +1,4 @@
-﻿using RaceDay.Models.Entities;
+using RaceDay.Models.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -28,6 +28,27 @@ public class User
 
     [Column("created_at")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // ---- Part 3 additions ----
+    [MaxLength(30)]
+    [Column("phone_number")]
+    public string? PhoneNumber { get; set; }
+
+    [Column("date_of_birth")]
+    public DateTime? DateOfBirth { get; set; }
+
+    [MaxLength(20)]
+    [Column("gender")]
+    public string? Gender { get; set; }
+
+    [MaxLength(100)]
+    [Column("city")]
+    public string? City { get; set; }
+
+    /// <summary>Blob name of the profile picture in Azure Blob Storage (e.g. profiles/abc.jpg).</summary>
+    [MaxLength(300)]
+    [Column("profile_picture")]
+    public string? ProfilePicture { get; set; }
 
     // Navigation
     public ICollection<Event> CreatedEvents { get; set; } = new List<Event>();

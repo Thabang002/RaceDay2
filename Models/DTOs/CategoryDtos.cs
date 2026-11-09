@@ -1,24 +1,25 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace RaceDay.Models.DTOs;
 
 public record CreateCategoryDto(
-    [Required] string Name,
+    [Required, StringLength(255)] string Name,
     string? Description,
-    [Required] decimal DistanceKm,
-    [Required] decimal StartFee,
-    [Required] int MaxParticipants
+    [Required, Range(0, 1000)] decimal DistanceKm,
+    [Required, Range(0, 100000)] decimal StartFee,
+    [Required, Range(1, 100000)] int MaxParticipants
 );
 
 public record UpdateCategoryDto(
-    string Name,
+    [Required, StringLength(255)] string Name,
     string? Description,
-    decimal DistanceKm,
-    decimal StartFee,
-    int MaxParticipants
+    [Range(0, 1000)] decimal DistanceKm,
+    [Range(0, 100000)] decimal StartFee,
+    [Range(1, 100000)] int MaxParticipants
 );
 
 public record CategoryDto(
     int CategoryId, int EventId, string Name, string? Description,
-    decimal DistanceKm, decimal StartFee, int MaxParticipants
+    decimal DistanceKm, decimal StartFee, int MaxParticipants,
+    int EnrolledCount
 );

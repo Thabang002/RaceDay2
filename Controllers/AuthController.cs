@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RaceDay.Data;
@@ -48,8 +48,7 @@ public class AuthController : ControllerBase
         await _db.SaveChangesAsync();
 
         var token = _tokenService.GenerateToken(user);
-        var userDto = new UserDto(user.UserId, user.Email, user.FullName, user.Role, user.CreatedAt);
-        return StatusCode(201, new AuthResponseDto(token, userDto));
+        return StatusCode(201, new AuthResponseDto(token, user.ToDto()));
     }
 
     /// <summary>Authenticate a user and return a JWT token.</summary>
@@ -67,8 +66,7 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid credentials." });
 
         var token = _tokenService.GenerateToken(user);
-        var userDto = new UserDto(user.UserId, user.Email, user.FullName, user.Role, user.CreatedAt);
-        return Ok(new AuthResponseDto(token, userDto));
+        return Ok(new AuthResponseDto(token, user.ToDto()));
     }
 
     /// <summary>Logout (client discards JWT).</summary>

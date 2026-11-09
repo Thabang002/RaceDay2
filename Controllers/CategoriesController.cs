@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RaceDay.Data;
@@ -24,10 +24,11 @@ public class CategoriesController : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var c = await _db.Categories.FindAsync(id);
-        if (c == null) return NotFound();
+        if (c == null) return NotFound(new { message = "Category not found." });
+        var enrolled = await _db.Enrolments.CountAsync(e => e.CategoryId == id && e.Status == EnrolmentStatus.Active);
         return Ok(new CategoryDto(
             c.CategoryId, c.EventId, c.Name, c.Description,
-            c.DistanceKm, c.StartFee, c.MaxParticipants));
+            c.DistanceKm, c.StartFee, c.MaxParticipants, enrolled));
     }
 
     /// <summary>Create category for an event (owner Organiser only).</summary>
@@ -36,8 +37,11 @@ public class CategoriesController : ControllerBase
     public async Task<IActionResult> Create(int id, [FromBody] CreateCategoryDto dto)
     {
         var ev = await _db.Events.FindAsync(id);
-        if (ev == null) return NotFound();
+        if (ev == null || ev.IsDeleted) return NotFound(new { message = "Event not found." });
         if (ev.CreatedBy != CurrentUserId) return Forbid();
+
+        if (await _db.Categories.AnyAsync(x => x.EventId == id && x.Name == dto.Name))
+            return Conflict(new { message = "This event already has a category with that name." });
 
         var c = new Category
         {
@@ -54,7 +58,7 @@ public class CategoriesController : ControllerBase
 
         return StatusCode(201, new CategoryDto(
             c.CategoryId, c.EventId, c.Name, c.Description,
-            c.DistanceKm, c.StartFee, c.MaxParticipants));
+            c.DistanceKm, c.StartFee, c.MaxParticipants, 0));
     }
 
     /// <summary>Update a category (owner Organiser only).</summary>
@@ -66,11 +70,15 @@ public class CategoriesController : ControllerBase
             .Include(c => c.Event)
             .FirstOrDefaultAsync(c => c.CategoryId == id);
 
-        if (category == null) return NotFound();
+        if (category == null) return NotFound(new { message = "Category not found." });
 
         // Ownership check — only the event's organiser can edit its categories
         if (category.Event == null || category.Event.CreatedBy != CurrentUserId)
             return Forbid();
+
+        var enrolled = await _db.Enrolments.CountAsync(e => e.CategoryId == id && e.Status == EnrolmentStatus.Active);
+        if (dto.MaxParticipants < enrolled)
+            return BadRequest(new { message = $"Max participants cannot be lower than the {enrolled} already enrolled." });
 
         category.Name = dto.Name;
         category.Description = dto.Description;
@@ -82,7 +90,7 @@ public class CategoriesController : ControllerBase
 
         return Ok(new CategoryDto(
             category.CategoryId, category.EventId, category.Name, category.Description,
-            category.DistanceKm, category.StartFee, category.MaxParticipants));
+            category.DistanceKm, category.StartFee, category.MaxParticipants, enrolled));
     }
 
     /// <summary>Delete a category (owner Organiser only).</summary>
@@ -94,7 +102,7 @@ public class CategoriesController : ControllerBase
             .Include(c => c.Event)
             .FirstOrDefaultAsync(c => c.CategoryId == id);
 
-        if (category == null) return NotFound();
+        if (category == null) return NotFound(new { message = "Category not found." });
 
         if (category.Event == null || category.Event.CreatedBy != CurrentUserId)
             return Forbid();
