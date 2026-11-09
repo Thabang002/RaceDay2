@@ -8,7 +8,7 @@ using RaceDay.Middleware;
 using RaceDay.Services;
 using System.Reflection;
 using System.Text;
-
+//hellow world
 var builder = WebApplication.CreateBuilder(args);
 
 // Database

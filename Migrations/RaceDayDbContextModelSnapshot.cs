@@ -125,6 +125,11 @@ namespace RaceDay.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventId"));
 
+                    b.Property<string>("BannerImage")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("banner_image");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
@@ -141,6 +146,15 @@ namespace RaceDay.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("description");
 
+                    b.Property<decimal?>("DistanceKm")
+                        .HasColumnType("decimal(6,2)")
+                        .HasColumnName("distance_km");
+
+                    b.Property<string>("EventType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("event_type");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");
@@ -152,6 +166,10 @@ namespace RaceDay.Migrations
                     b.Property<int>("MaxParticipants")
                         .HasColumnType("int")
                         .HasColumnName("max_participants");
+
+                    b.Property<bool>("ResultsPublished")
+                        .HasColumnType("bit")
+                        .HasColumnName("results_published");
 
                     b.Property<TimeSpan>("StartTime")
                         .HasColumnType("time")
@@ -298,9 +316,18 @@ namespace RaceDay.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("city");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("date_of_birth");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -314,10 +341,25 @@ namespace RaceDay.Migrations
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("full_name");
 
+                    b.Property<string>("Gender")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("gender");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("password_hash");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("phone_number");
+
+                    b.Property<string>("ProfilePicture")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("profile_picture");
 
                     b.Property<string>("Role")
                         .IsRequired()
