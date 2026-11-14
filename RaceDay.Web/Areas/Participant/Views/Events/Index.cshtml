@@ -1,0 +1,77 @@
+@model EventBrowseViewModel
+@{
+    ViewData["Title"] = "Find races";
+    var f = Model.Filter;
+    var first = Model.ParticipantName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "runner";
+}
+<section class="rd-hero rd-hero-slim mb-4">
+    <div class="position-relative" style="z-index:1">
+        <div class="rd-kicker text-white-50">Welcome back, @first</div>
+        <h1 class="rd-display" style="font-size:clamp(2rem,4vw,3rem)">Find your next <span class="text-orange">start line</span></h1>
+        <p class="mb-0">@Model.Events.Count upcoming @(Model.Events.Count == 1 ? "event" : "events")@(f.HasFilters ? " match your filters" : " open on RaceDay").</p>
+    </div>
+</section>
+
+<form method="get" class="rd-card rd-filters mb-4" role="search" aria-label="Filter events">
+    <div class="row g-2 align-items-end">
+        <div class="col-lg-3 col-md-6">
+            <label for="Search" class="form-label">Search</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input id="Search" name="Search" value="@f.Search" class="form-control" placeholder="Race, venue or town" maxlength="100" />
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-6">
+            <label for="EventType" class="form-label">Event type</label>
+            <select id="EventType" name="EventType" class="form-select" asp-items="@(new SelectList(Model.EventTypes, f.EventType))">
+                <option value="">All types</option>
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-4">
+            <label for="Distance" class="form-label">Distance</label>
+            <select id="Distance" name="Distance" class="form-select" asp-items="@(EventFilter.DistancePresets.Select(p => new SelectListItem(p.Label, p.Key, p.Key == (f.Distance ?? ""))))"></select>
+        </div>
+        <div class="col-lg-2 col-md-4">
+            <label for="LocationId" class="form-label">Venue</label>
+            <select id="LocationId" name="LocationId" class="form-select" asp-items="@(new SelectList(Model.Locations, "Value", "Text", f.LocationId?.ToString()))">
+                <option value="">Anywhere</option>
+            </select>
+        </div>
+        <div class="col-lg-1 col-md-2 col-6">
+            <label for="From" class="form-label">From</label>
+            <input id="From" name="From" type="date" class="form-control px-2" value="@f.From?.ToString("yyyy-MM-dd")" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-lg-1 col-md-2 col-6">
+            <label for="To" class="form-label">To</label>
+            <input id="To" name="To" type="date" class="form-control px-2" value="@f.To?.ToString("yyyy-MM-dd")" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-lg-1 col-md-12 d-flex gap-1">
+            <button type="submit" class="btn btn-rd-primary flex-grow-1 btn-icon" title="Apply filters" aria-label="Apply filters"><i class="bi bi-funnel-fill"></i></button>
+            @if (f.HasFilters)
+            {
+                <a href="/Participant/Events" class="btn btn-light btn-icon" title="Clear filters" aria-label="Clear filters"><i class="bi bi-x-lg"></i></a>
+            }
+        </div>
+    </div>
+</form>
+
+@if (!Model.Events.Any())
+{
+    <div class="rd-card rd-empty">
+        <div class="rd-empty-icon"><i class="bi bi-signpost-split"></i></div>
+        <h2 class="rd-h2">No races found</h2>
+        <p class="text-muted">@(f.HasFilters ? "Try widening your search or clearing the filters." : "There are no upcoming events right now - check back soon.")</p>
+        @if (f.HasFilters) { <a href="/Participant/Events" class="btn btn-rd-primary">Clear filters</a> }
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var ev in Model.Events)
+        {
+            <div class="col-md-6 col-xl-4">
+                <partial name="_EventCard" model="@(ev, Model.EnrolledEventIds.Contains(ev.EventId), $"/Participant/Events/Details/{ev.EventId}")" />
+            </div>
+        }
+    </div>
+}

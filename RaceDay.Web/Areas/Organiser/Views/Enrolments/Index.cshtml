@@ -1,0 +1,79 @@
+@model EnrolmentsPageViewModel
+@{
+    ViewData["Title"] = "Enrolments · " + Model.Event.Title;
+    ViewData["Tab"] = "Enrolments";
+    var active = Model.Enrolments.Where(e => e.IsActive).ToList();
+    var rows = Model.Filtered.ToList();
+}
+<partial name="_EventSubNav" model="Model.Event" />
+
+<div class="row g-3 mb-4">
+    <div class="col-4"><div class="rd-card rd-stat h-100"><div class="rd-stat-label">Total enrolled</div><div class="rd-stat-value">@active.Count</div><div class="rd-stat-icon"><i class="bi bi-people-fill"></i></div></div></div>
+    <div class="col-4"><div class="rd-card rd-stat h-100"><div class="rd-stat-label">Confirmed</div><div class="rd-stat-value text-success">@active.Count(e => e.StatusLabel == "Confirmed")</div><div class="rd-stat-icon"><i class="bi bi-check2-circle"></i></div></div></div>
+    <div class="col-4"><div class="rd-card rd-stat h-100"><div class="rd-stat-label">Pending</div><div class="rd-stat-value" style="color:#B45309">@active.Count(e => e.StatusLabel == "Pending")</div><div class="rd-stat-icon"><i class="bi bi-hourglass-split"></i></div></div></div>
+</div>
+
+<div class="rd-card">
+    <div class="rd-card-header flex-wrap">
+        <h2 class="rd-h3">Participants</h2>
+        <form method="get" class="d-flex flex-wrap gap-2">
+            <input type="hidden" name="eventId" value="@Model.Event.EventId" />
+            <select name="category" class="form-select form-select-sm w-auto" data-autosubmit aria-label="Filter by category"
+                    asp-items="@(new SelectList(Model.Categories, nameof(CategoryModel.CategoryId), nameof(CategoryModel.Name), Model.CategoryFilter))">
+                <option value="">All categories</option>
+            </select>
+            <select name="status" class="form-select form-select-sm w-auto" data-autosubmit aria-label="Filter by status"
+                    asp-items="@(new SelectList(new[] { "Confirmed", "Pending", "Withdrawn" }, Model.StatusFilter))">
+                <option value="">All statuses</option>
+            </select>
+            <noscript><button class="btn btn-sm btn-rd-navy">Filter</button></noscript>
+        </form>
+    </div>
+
+    @if (!rows.Any())
+    {
+        <div class="rd-empty">
+            <div class="rd-empty-icon"><i class="bi bi-person-x"></i></div>
+            <p class="text-muted mb-0">@(Model.Enrolments.Any() ? "No enrolments match these filters." : "Nobody has enrolled yet. Share your event!")</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table rd-table">
+                <thead><tr><th>Entry #</th><th>Participant</th><th>Category</th><th>Enrolled on</th><th>Status</th><th class="text-end">Action</th></tr></thead>
+                <tbody>
+                @foreach (var e in rows)
+                {
+                    <tr>
+                        <td><code class="text-navy">@e.EntryNumber</code></td>
+                        <td><span class="rd-cell-title">@e.UserName</span><div class="small text-muted">@e.UserEmail</div></td>
+                        <td><span class="rd-chip">@e.CategoryName</span></td>
+                        <td class="text-nowrap">@Ui.ShortDate(e.RegistrationDate)</td>
+                        <td><partial name="_StatusBadge" model="@e.StatusLabel" /></td>
+                        <td class="text-end">
+                            @if (e.IsActive)
+                            {
+                                var confirmed = e.StatusLabel == "Confirmed";
+                                <form asp-action="SetStatus" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@e.EnrolmentId" />
+                                    <input type="hidden" name="eventId" value="@Model.Event.EventId" />
+                                    <input type="hidden" name="confirm" value="@(confirmed ? "false" : "true")" />
+                                    @if (confirmed)
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-rd-outline"><i class="bi bi-arrow-counterclockwise"></i> Mark pending</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i> Confirm</button>
+                                    }
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

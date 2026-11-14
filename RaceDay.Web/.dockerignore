@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/*.user
+**/*.suo
+**/.git
+**/.gitignore
+**/Dockerfile*
+**/.dockerignore
+**/docker-compose*
+**/node_modules/
+**/npm-debug.log
+**/secrets.json
+**/appsettings.*.local.json
+README.md

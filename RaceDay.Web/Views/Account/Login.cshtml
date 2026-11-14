@@ -1,0 +1,48 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Log in";
+}
+<div class="rd-card rd-auth">
+    <div class="row g-0">
+        <div class="col-md-5 d-none d-md-block">
+            <div class="rd-auth-side">
+                <div>
+                    <div class="rd-kicker text-white-50">Welcome back</div>
+                    <h2 class="rd-display" style="font-size:2.6rem">Ready,<br />set, <span class="text-orange">go.</span></h2>
+                </div>
+                <ul class="list-unstyled mb-0">
+                    <li><i class="bi bi-check-circle-fill"></i> Enter races in seconds</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Track every enrolment</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Your full race history</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="rd-card-body p-4 p-lg-5">
+                <h1 class="rd-h1">Log in</h1>
+                <p class="text-muted mb-4">New to RaceDay? <a asp-action="Register">Create a free account</a></p>
+
+                <form asp-action="Login" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autocomplete="email" placeholder="you@example.com" autofocus />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-rd-primary btn-lg w-100"><i class="bi bi-box-arrow-in-right"></i> Log in</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,78 @@
+@model EventManageViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = ev.Title;
+    ViewData["Tab"] = "Overview";
+    var img = Ui.MediaUrl(ev.BannerImage);
+}
+<partial name="_EventSubNav" model="ev" />
+
+<div class="rd-banner @(img == null ? "rd-banner-placeholder" : "")" style="@(img != null ? $"background-image:url('{img}')" : "")">
+    <div class="rd-banner-content d-flex flex-wrap justify-content-between align-items-end gap-3">
+        <div>
+            <span class="rd-chip rd-chip-lime mb-2"><i class="bi @Ui.EventTypeIcon(ev.EventType)"></i> @(ev.EventType ?? "Event")</span>
+            <div class="rd-h1">@Ui.Km(ev.DistanceKm)</div>
+        </div>
+        @if (img == null)
+        {
+            <a href="/Organiser/Events/Edit/@ev.EventId" class="btn btn-rd-lime btn-sm"><i class="bi bi-image"></i> Add a banner image</a>
+        }
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="rd-card rd-stat h-100"><div class="rd-stat-label">Enrolled</div><div class="rd-stat-value">@Model.EnrolmentCount<small class="fs-6 text-muted fw-normal">/@ev.MaxParticipants</small></div><div class="rd-stat-icon"><i class="bi bi-people-fill"></i></div></div></div>
+    <div class="col-6 col-lg-3"><div class="rd-card rd-stat h-100"><div class="rd-stat-label">Confirmed</div><div class="rd-stat-value">@Model.ConfirmedCount</div><div class="rd-stat-icon"><i class="bi bi-check2-circle"></i></div></div></div>
+    <div class="col-6 col-lg-3"><div class="rd-card rd-stat h-100"><div class="rd-stat-label">Categories</div><div class="rd-stat-value">@Model.Categories.Count</div><div class="rd-stat-icon"><i class="bi bi-tags-fill"></i></div></div></div>
+    <div class="col-6 col-lg-3"><div class="rd-card rd-stat rd-stat-accent h-100"><div class="rd-stat-label">Countdown</div><div class="rd-stat-value" style="font-size:1.6rem">@Ui.DaysToGo(ev.Date)</div><div class="rd-stat-icon"><i class="bi bi-stopwatch"></i></div></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="rd-card h-100">
+            <div class="rd-card-header"><h2 class="rd-h3">About this event</h2></div>
+            <div class="rd-card-body">
+                <p style="white-space:pre-line">@(string.IsNullOrWhiteSpace(ev.Description) ? "No description yet." : ev.Description)</p>
+                <dl class="row small mb-0">
+                    <dt class="col-sm-4 text-muted">Date &amp; start</dt><dd class="col-sm-8">@Ui.Date(ev.Date) at @Ui.Clock(ev.StartTime)</dd>
+                    <dt class="col-sm-4 text-muted">Venue</dt><dd class="col-sm-8">@ev.LocationName @(ev.City != null ? $"({ev.City})" : "")</dd>
+                    <dt class="col-sm-4 text-muted">Distance</dt><dd class="col-sm-8">@Ui.Km(ev.DistanceKm)</dd>
+                    <dt class="col-sm-4 text-muted">Capacity</dt><dd class="col-sm-8">@ev.MaxParticipants participants</dd>
+                    <dt class="col-sm-4 text-muted">Results</dt><dd class="col-sm-8">@(ev.ResultsPublished ? "Published" : "Not published")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="rd-card h-100">
+            <div class="rd-card-header">
+                <h2 class="rd-h3">Categories</h2>
+                <a href="/Organiser/Categories?eventId=@ev.EventId" class="btn btn-sm btn-rd-outline"><i class="bi bi-plus-lg"></i> Manage</a>
+            </div>
+            @if (!Model.Categories.Any())
+            {
+                <div class="rd-card-body text-muted small">
+                    <i class="bi bi-exclamation-triangle-fill text-warning"></i> Participants can't enrol until you add at least one category.
+                </div>
+            }
+            else
+            {
+                <ul class="list-group list-group-flush">
+                    @foreach (var c in Model.Categories)
+                    {
+                        <li class="list-group-item py-3">
+                            <div class="d-flex justify-content-between"><strong>@c.Name</strong><span class="small text-muted">@c.EnrolledCount/@c.MaxParticipants</span></div>
+                            <div class="progress rd-progress mt-2"><div class="progress-bar" style="width:@(c.MaxParticipants == 0 ? 0 : Math.Min(100, c.EnrolledCount * 100 / c.MaxParticipants))%"></div></div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-end mt-4">
+    <form asp-action="Delete" asp-route-id="@ev.EventId" method="post" data-confirm="Delete &quot;@ev.Title&quot;? This removes it for all participants." data-confirm-button="Delete event">
+        <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash"></i> Delete event</button>
+    </form>
+</div>

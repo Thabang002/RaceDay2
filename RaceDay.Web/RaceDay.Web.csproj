@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>RaceDay.Web</RootNamespace>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <!-- Visual Studio container tooling: build context is this project folder (matches the Dockerfile). -->
+    <DockerfileContext>.</DockerfileContext>
+  </PropertyGroup>
+
+  <!--
+    No EF Core / database packages on purpose: the MVC app talks to the RaceDay API only.
+  -->
+
+</Project>

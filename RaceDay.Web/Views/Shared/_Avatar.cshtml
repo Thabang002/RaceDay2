@@ -1,0 +1,12 @@
+@model (string Name, string? Picture, int Size)
+@{
+    var url = Ui.MediaUrl(Model.Picture);
+}
+@if (url != null)
+{
+    <img src="@url" alt="@Model.Name" class="rd-avatar" width="@Model.Size" height="@Model.Size" style="width:@(Model.Size)px;height:@(Model.Size)px" />
+}
+else
+{
+    <span class="rd-avatar rd-avatar-initials" style="width:@(Model.Size)px;height:@(Model.Size)px;font-size:@(Model.Size * 0.4)px" aria-label="@Model.Name">@Ui.Initials(Model.Name)</span>
+}

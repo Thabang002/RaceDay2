@@ -1,0 +1,50 @@
+@model LocationFormViewModel
+@{
+    ViewData["Title"] = "Add venue";
+}
+<partial name="_PageHeader" model="@(("Venues", "Add a venue", (string?)"Venues can be reused across all your events."))" />
+
+<div class="row">
+    <div class="col-lg-8 col-xl-7">
+        <form asp-action="Create" method="post" novalidate class="rd-card">
+            <div class="rd-card-body">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+                <input type="hidden" asp-for="ReturnUrl" />
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" placeholder="e.g. Peter Mokaba Stadium" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Address" class="form-label"></label>
+                    <input asp-for="Address" class="form-control" />
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label asp-for="City" class="form-label"></label>
+                        <input asp-for="City" class="form-control" />
+                        <span asp-validation-for="City" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Province" class="form-label"></label>
+                        <select asp-for="Province" class="form-select" asp-items="@(new SelectList(LocationFormViewModel.Provinces))">
+                            <option value="">Select…</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="PostalCode" class="form-label"></label>
+                        <input asp-for="PostalCode" class="form-control" />
+                    </div>
+                </div>
+            </div>
+            <div class="rd-card-header border-top border-bottom-0 justify-content-end gap-2">
+                <a href="@(string.IsNullOrEmpty(Model.ReturnUrl) ? "/Organiser/Events" : Model.ReturnUrl)" class="btn btn-light">Cancel</a>
+                <button type="submit" class="btn btn-rd-primary"><i class="bi bi-geo-alt-fill"></i> Save venue</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

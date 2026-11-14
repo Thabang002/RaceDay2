@@ -1,0 +1,18 @@
+@{
+    var code = (int?)ViewBag.Code ?? 500;
+    var (title, text, icon) = code switch
+    {
+        404 => ("Off course!", "We couldn't find that page. It may have moved or no longer exists.", "bi-signpost-split-fill"),
+        403 => ("Wrong start pen", "You don't have access to that page.", "bi-shield-lock-fill"),
+        400 => ("That didn't look right", "The request contained invalid information.", "bi-exclamation-diamond-fill"),
+        _ => ("Something went wrong", "Please try again in a moment.", "bi-cone-striped")
+    };
+    ViewData["Title"] = title;
+}
+<div class="rd-card rd-empty my-4">
+    <div class="rd-empty-icon"><i class="bi @icon"></i></div>
+    <div class="rd-kicker">Error @code</div>
+    <h1 class="rd-h2">@title</h1>
+    <p class="text-muted">@text</p>
+    <a href="@Context.Session.HomeUrl()" class="btn btn-rd-primary"><i class="bi bi-house-fill"></i> Back to start</a>
+</div>

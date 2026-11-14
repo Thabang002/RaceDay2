@@ -1,0 +1,109 @@
+@model ResultsEntryViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = "Results · " + ev.Title;
+    ViewData["Tab"] = "Results";
+}
+<partial name="_EventSubNav" model="ev" />
+
+@if (!Model.CanCapture)
+{
+    <div class="rd-card rd-empty">
+        <div class="rd-empty-icon"><i class="bi bi-hourglass-split"></i></div>
+        <h2 class="rd-h2">The gun hasn't gone yet</h2>
+        <p class="text-muted mb-0">You can capture finish times and positions once the event has taken place on <strong>@Ui.Date(ev.Date)</strong>. @Model.Rows.Count participant(s) currently enrolled.</p>
+    </div>
+}
+else if (!Model.Rows.Any())
+{
+    <div class="rd-card rd-empty">
+        <div class="rd-empty-icon"><i class="bi bi-person-x"></i></div>
+        <h2 class="rd-h2">No active enrolments</h2>
+        <p class="text-muted mb-0">There is nobody to capture results for.</p>
+    </div>
+}
+else
+{
+    <div class="rd-hero rd-hero-slim d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <div class="rd-kicker text-white-50">Results desk</div>
+            <div class="rd-display" style="font-size:1.8rem">@Model.CapturedCount of @Model.Rows.Count captured</div>
+            <span class="rd-status @(ev.ResultsPublished ? "rd-status-confirmed" : "rd-status-pending")"><i class="bi @(ev.ResultsPublished ? "bi-broadcast" : "bi-eye-slash")"></i> @(ev.ResultsPublished ? "Published to participants" : "Not published yet")</span>
+        </div>
+        <form asp-action="Publish" method="post" class="position-relative" style="z-index:1"
+              data-confirm="@(ev.ResultsPublished ? "Hide these results from participants?" : "Publish results? Participants will see their time and position under My Results.")"
+              data-confirm-button="@(ev.ResultsPublished ? "Unpublish" : "Publish")" data-confirm-style="@(ev.ResultsPublished ? "btn-rd-navy" : "btn-rd-primary")">
+            <input type="hidden" name="eventId" value="@ev.EventId" />
+            <input type="hidden" name="publish" value="@(ev.ResultsPublished ? "false" : "true")" />
+            @if (ev.ResultsPublished)
+            {
+                <button type="submit" class="btn btn-outline-light"><i class="bi bi-eye-slash"></i> Unpublish</button>
+            }
+            else
+            {
+                <button type="submit" class="btn btn-rd-lime btn-lg"><i class="bi bi-broadcast"></i> Publish results</button>
+            }
+        </form>
+    </div>
+
+    <form asp-action="Index" asp-route-eventId="@ev.EventId" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+        <div class="rd-card">
+            <div class="rd-card-header flex-wrap">
+                <div>
+                    <h2 class="rd-h3">Capture results</h2>
+                    <span class="small text-muted">Finish time as <strong>h:mm:ss</strong>. Leave a row blank if there's no result yet.</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" name="AutoRank" value="true" class="btn btn-rd-navy" title="Positions are calculated from the fastest finish time"><i class="bi bi-sort-numeric-down"></i> Save &amp; auto-rank</button>
+                    <button type="submit" name="AutoRank" value="false" class="btn btn-rd-primary"><i class="bi bi-floppy-fill"></i> Save results</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table rd-table align-middle">
+                    <thead>
+                        <tr><th>Entry #</th><th>Participant</th><th>Category</th><th>Finish time</th><th>Position</th><th>Status</th><th>Pace</th><th>Notes</th></tr>
+                    </thead>
+                    <tbody>
+                    @for (var i = 0; i < Model.Rows.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                <code class="text-navy">@Model.Rows[i].EntryNumber</code>
+                                <input type="hidden" asp-for="Rows[i].EnrolmentId" />
+                                <input type="hidden" asp-for="Rows[i].EntryNumber" />
+                                <input type="hidden" asp-for="Rows[i].ParticipantName" />
+                                <input type="hidden" asp-for="Rows[i].CategoryName" />
+                            </td>
+                            <td class="rd-cell-title">@Model.Rows[i].ParticipantName</td>
+                            <td><span class="rd-chip">@Model.Rows[i].CategoryName</span></td>
+                            <td>
+                                <input asp-for="Rows[i].FinishTime" class="form-control form-control-sm rd-results-input rd-time" placeholder="1:45:30" inputmode="numeric" aria-label="Finish time for @Model.Rows[i].ParticipantName" />
+                                <span asp-validation-for="Rows[i].FinishTime" class="text-danger d-block"></span>
+                            </td>
+                            <td>
+                                <input asp-for="Rows[i].Position" type="number" min="1" class="form-control form-control-sm" style="max-width:90px" aria-label="Position for @Model.Rows[i].ParticipantName" />
+                                <span asp-validation-for="Rows[i].Position" class="text-danger d-block"></span>
+                            </td>
+                            <td>
+                                <select asp-for="Rows[i].Status" class="form-select form-select-sm" style="min-width:115px" asp-items="@(new SelectList(ResultsEntryViewModel.Statuses, Model.Rows[i].Status))" aria-label="Result status for @Model.Rows[i].ParticipantName">
+                                    <option value="">—</option>
+                                </select>
+                            </td>
+                            <td class="small text-muted text-nowrap">@Ui.Pace(Model.Rows[i].PacePerKm)</td>
+                            <td><input asp-for="Rows[i].Notes" class="form-control form-control-sm" style="min-width:140px" aria-label="Notes for @Model.Rows[i].ParticipantName" /></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-4 py-3 small text-muted border-top">
+                <i class="bi bi-info-circle"></i> <strong>Auto-rank</strong> orders everyone with status <em>Finished</em> (or blank) and a finish time from fastest to slowest and assigns positions 1, 2, 3… DNF/DNS/DSQ entries get no position.
+            </div>
+        </div>
+    </form>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

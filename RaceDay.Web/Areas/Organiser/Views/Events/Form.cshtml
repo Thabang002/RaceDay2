@@ -1,0 +1,118 @@
+@model EventFormViewModel
+@{
+    ViewData["Title"] = Model.IsEdit ? "Edit event" : "Create event";
+    ViewData["Tab"] = "Edit";
+    var banner = Ui.MediaUrl(Model.ExistingBanner);
+    var returnUrl = Model.IsEdit ? $"/Organiser/Events/Edit/{Model.EventId}" : "/Organiser/Events/Create";
+}
+@if (Model.IsEdit)
+{
+    <partial name="_EventSubNav" model="@(new EventModel { EventId = Model.EventId!.Value, Title = Model.Title, Date = Model.Date ?? DateTime.Today, StartTime = Model.StartTime ?? TimeSpan.Zero, Status = Model.Status ?? "", LocationName = Model.Locations.FirstOrDefault(l => l.Value == Model.LocationId?.ToString())?.Text })" />
+}
+else
+{
+    <partial name="_PageHeader" model="@(("Events management", "Create event", (string?)"Set the essentials now - you'll add categories on the next step."))" />
+}
+
+<form asp-action="@(Model.IsEdit ? "Edit" : "Create")" asp-route-id="@Model.EventId" method="post" enctype="multipart/form-data" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+    <input type="hidden" asp-for="EventId" />
+    <input type="hidden" asp-for="ExistingBanner" />
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="rd-card">
+                <div class="rd-card-header"><h2 class="rd-h3">Event details</h2></div>
+                <div class="rd-card-body">
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control form-control-lg" placeholder="e.g. Polokwane Sunrise 21K" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="5" placeholder="Route, start/finish, water points, prizes, what to bring..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="EventType" class="form-label"></label>
+                            <select asp-for="EventType" class="form-select" asp-items="@(new SelectList(Model.EventTypes))">
+                                <option value="">Choose a type…</option>
+                            </select>
+                            <span asp-validation-for="EventType" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="DistanceKm" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="DistanceKm" class="form-control" type="number" step="0.1" min="0.1" placeholder="21.1" />
+                                <span class="input-group-text">km</span>
+                            </div>
+                            <span asp-validation-for="DistanceKm" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Date" class="form-label"></label>
+                            <input asp-for="Date" class="form-control" type="date" />
+                            <span asp-validation-for="Date" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="StartTime" class="form-label"></label>
+                            <input asp-for="StartTime" class="form-control" type="time" asp-format="{0:hh\:mm}" />
+                            <span asp-validation-for="StartTime" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="MaxParticipants" class="form-label"></label>
+                            <input asp-for="MaxParticipants" class="form-control" type="number" min="1" />
+                            <span asp-validation-for="MaxParticipants" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="LocationId" class="form-label"></label>
+                            <select asp-for="LocationId" class="form-select" asp-items="Model.Locations">
+                                <option value="">Choose a venue…</option>
+                            </select>
+                            <span asp-validation-for="LocationId" class="text-danger"></span>
+                            <div class="form-text">Not listed? <a href="/Organiser/Locations/Create?returnUrl=@Uri.EscapeDataString(returnUrl)">Add a new venue</a></div>
+                        </div>
+                        @if (Model.IsEdit)
+                        {
+                            <div class="col-md-4">
+                                <label asp-for="Status" class="form-label"></label>
+                                <select asp-for="Status" class="form-select" asp-items="@(new SelectList(EventFormViewModel.Statuses))"></select>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="rd-card rd-sticky">
+                <div class="rd-card-header"><h2 class="rd-h3">Banner image</h2></div>
+                <div class="rd-card-body">
+                    <img id="bannerPreview" src="@banner" alt="Event banner preview" class="rd-banner-preview mb-3 @(banner == null ? "d-none" : "")" />
+                    @if (banner == null)
+                    {
+                        <div class="rd-banner rd-banner-placeholder mb-3" style="min-height:140px" id="bannerPlaceholder"><div class="rd-banner-content small text-white-50"><i class="bi bi-image"></i> No banner yet</div></div>
+                    }
+                    <label asp-for="Banner" class="form-label">@(banner == null ? "Upload a banner" : "Replace banner")</label>
+                    <input asp-for="Banner" type="file" class="form-control" accept="@ImageRules.Accept" data-preview="#bannerPreview" />
+                    <span asp-validation-for="Banner" class="text-danger"></span>
+                    <div class="form-text">Wide images work best (e.g. 1600×600). JPG/PNG/WEBP/GIF, max 5 MB. Stored in Azure Blob Storage.</div>
+                </div>
+                <div class="rd-card-header border-top border-bottom-0 flex-column align-items-stretch">
+                    <button type="submit" class="btn btn-rd-primary btn-lg"><i class="bi bi-check2-circle"></i> @(Model.IsEdit ? "Save changes" : "Create event")</button>
+                    <a href="@(Model.IsEdit ? $"/Organiser/Events/Details/{Model.EventId}" : "/Organiser/Events")" class="btn btn-light">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById("Banner")?.addEventListener("change", function () {
+            document.getElementById("bannerPlaceholder")?.classList.add("d-none");
+        });
+    </script>
+}

@@ -1,0 +1,72 @@
+@model MyEnrolmentsViewModel
+@{
+    ViewData["Title"] = "My enrolments";
+}
+<partial name="_PageHeader" model="@(("Race calendar", "My enrolments", (string?)"Every event you've entered and where your entry stands."))" />
+
+<div class="d-flex flex-wrap gap-3 mb-3 small">
+    <span><partial name="_StatusBadge" model="@("Confirmed")" /> place confirmed by the organiser</span>
+    <span><partial name="_StatusBadge" model="@("Pending")" /> awaiting confirmation / payment</span>
+</div>
+
+@if (!Model.Upcoming.Any() && !Model.Past.Any())
+{
+    <div class="rd-card rd-empty">
+        <div class="rd-empty-icon"><i class="bi bi-ticket-perforated"></i></div>
+        <h2 class="rd-h2">No enrolments yet</h2>
+        <p class="text-muted">Find a race and enter in seconds.</p>
+        <a href="/Participant/Events" class="btn btn-rd-primary"><i class="bi bi-search"></i> Find races</a>
+    </div>
+}
+else
+{
+    <ul class="nav nav-pills mb-3 gap-2" role="tablist">
+        <li class="nav-item" role="presentation"><button class="btn btn-rd-outline active" data-bs-toggle="pill" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="true">Upcoming (@Model.Upcoming.Count)</button></li>
+        <li class="nav-item" role="presentation"><button class="btn btn-rd-outline" data-bs-toggle="pill" data-bs-target="#past" type="button" role="tab" aria-controls="past" aria-selected="false">Past (@Model.Past.Count)</button></li>
+    </ul>
+    <div class="tab-content">
+        @foreach (var (id, list, upcoming) in new[] { ("upcoming", Model.Upcoming, true), ("past", Model.Past, false) })
+        {
+            <div class="tab-pane fade @(upcoming ? "show active" : "")" id="@id" role="tabpanel">
+                @if (!list.Any())
+                {
+                    <div class="rd-card rd-empty"><p class="text-muted mb-0">@(upcoming ? "No upcoming events." : "No past events yet.")</p></div>
+                }
+                else
+                {
+                    <div class="rd-card">
+                        <div class="table-responsive">
+                            <table class="table rd-table">
+                                <thead><tr><th>Event</th><th>Date</th><th>Category</th><th>Entry #</th><th>Status</th><th class="text-end"></th></tr></thead>
+                                <tbody>
+                                @foreach (var e in list)
+                                {
+                                    <tr>
+                                        <td><a href="/Participant/Events/Details/@e.EventId" class="rd-cell-title text-decoration-none">@e.EventTitle</a><div class="small text-muted">Entered @Ui.ShortDate(e.RegistrationDate)</div></td>
+                                        <td class="text-nowrap">@(e.EventDate.HasValue ? Ui.ShortDate(e.EventDate.Value) : "—")@if (upcoming && e.EventDate.HasValue) { <div class="small text-orange fw-semibold">@Ui.DaysToGo(e.EventDate.Value)</div> }</td>
+                                        <td><span class="rd-chip">@e.CategoryName</span></td>
+                                        <td><code class="text-navy">@e.EntryNumber</code></td>
+                                        <td><partial name="_StatusBadge" model="@e.StatusLabel" /></td>
+                                        <td class="text-end">
+                                            @if (upcoming && e.IsActive)
+                                            {
+                                                <form asp-action="Withdraw" asp-route-id="@e.EnrolmentId" method="post" data-confirm="Withdraw from &quot;@e.EventTitle&quot;? Your place will be released." data-confirm-button="Withdraw">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle"></i> Withdraw</button>
+                                                </form>
+                                            }
+                                            else if (!upcoming)
+                                            {
+                                                <a href="/Participant/Results" class="btn btn-sm btn-rd-outline"><i class="bi bi-trophy"></i> Results</a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}

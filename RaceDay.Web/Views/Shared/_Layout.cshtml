@@ -1,0 +1,157 @@
+@{
+    var session = Context.Session;
+    var loggedIn = session.IsLoggedIn();
+    var role = loggedIn ? session.Role() : null;
+    var isOrganiser = role == Roles.Organiser;
+    var title = ViewData["Title"] as string;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(string.IsNullOrEmpty(title) ? "RaceDay" : $"{title} · RaceDay")</title>
+    <link rel="icon" type="image/svg+xml" href="~/img/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="@(isOrganiser ? "rd-role-organiser" : loggedIn ? "rd-role-participant" : "rd-role-guest")">
+
+@if (isOrganiser)
+{
+    <!-- ================= ORGANISER: "Race Control" sidebar layout ================= -->
+    <div class="rd-shell">
+        <nav class="rd-topbar d-lg-none">
+            <button class="btn btn-link text-white p-0 fs-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#rdSidebar" aria-controls="rdSidebar" aria-label="Open menu">
+                <i class="bi bi-list"></i>
+            </button>
+            <a href="/Organiser/Dashboard" class="text-decoration-none"><partial name="_Logo" /></a>
+            <span></span>
+        </nav>
+
+        <aside class="offcanvas-lg offcanvas-start rd-sidebar" tabindex="-1" id="rdSidebar" aria-label="Organiser navigation">
+            <div class="offcanvas-header d-lg-none">
+                <partial name="_Logo" />
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#rdSidebar" aria-label="Close"></button>
+            </div>
+            <div class="rd-sidebar-inner">
+                <a href="/Organiser/Dashboard" class="d-none d-lg-block mb-1 text-decoration-none"><partial name="_Logo" /></a>
+                <span class="rd-role-chip mb-4"><i class="bi bi-broadcast-pin"></i> Race Control</span>
+
+                <ul class="nav flex-column rd-side-nav">
+                    <li><a class="nav-link @Nav("Dashboard")" href="/Organiser/Dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="nav-link @Nav("Events", exceptAction: "Create")" href="/Organiser/Events"><i class="bi bi-flag-fill"></i> My Events</a></li>
+                    <li><a class="nav-link @Nav("Events", "Create")" href="/Organiser/Events/Create"><i class="bi bi-plus-circle-fill"></i> Create Event</a></li>
+                    <li><a class="nav-link @Nav("Locations")" href="/Organiser/Locations/Create"><i class="bi bi-geo-alt-fill"></i> Add Venue</a></li>
+                    <li><a class="nav-link @Nav("Profile")" href="/Profile"><i class="bi bi-person-badge-fill"></i> My Profile</a></li>
+                </ul>
+
+                <div class="rd-sidebar-user mt-auto">
+                    <partial name="_Avatar" model="@(session.FullName(), session.ProfilePicture(), 40)" />
+                    <div class="small lh-sm overflow-hidden">
+                        <div class="fw-semibold text-white text-truncate">@session.FullName()</div>
+                        <div class="text-white-50 text-truncate">@session.Email()</div>
+                    </div>
+                </div>
+                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="mt-3">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100"><i class="bi bi-box-arrow-right"></i> Log out</button>
+                </form>
+            </div>
+        </aside>
+
+        <main class="rd-main">
+            <div class="container-fluid rd-container">
+                <partial name="_Alerts" />
+                @RenderBody()
+            </div>
+            <partial name="_Footer" />
+        </main>
+    </div>
+}
+else
+{
+    <!-- ================= PARTICIPANT / GUEST: top navigation ================= -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark rd-navbar" aria-label="Main navigation">
+            <div class="container">
+                <a class="navbar-brand" href="@(loggedIn ? "/Participant/Events" : "/")"><partial name="_Logo" /></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#rdNav" aria-controls="rdNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="rdNav">
+                    @if (loggedIn)
+                    {
+                        <ul class="navbar-nav me-auto ms-lg-4">
+                            <li class="nav-item"><a class="nav-link @Nav("Events")" href="/Participant/Events"><i class="bi bi-search"></i> Find Races</a></li>
+                            <li class="nav-item"><a class="nav-link @Nav("Enrolments")" href="/Participant/Enrolments"><i class="bi bi-ticket-perforated-fill"></i> My Enrolments</a></li>
+                            <li class="nav-item"><a class="nav-link @Nav("Results")" href="/Participant/Results"><i class="bi bi-trophy-fill"></i> My Results</a></li>
+                            <li class="nav-item"><a class="nav-link @Nav("Profile")" href="/Profile"><i class="bi bi-person-fill"></i> Profile</a></li>
+                        </ul>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="rd-role-chip rd-role-chip-runner d-none d-xl-inline-flex"><i class="bi bi-person-arms-up"></i> Runner</span>
+                            <div class="dropdown">
+                                <button class="btn btn-link text-white text-decoration-none d-flex align-items-center gap-2 p-0" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <partial name="_Avatar" model="@(session.FullName(), session.ProfilePicture(), 36)" />
+                                    <span class="d-none d-md-inline fw-semibold">@session.FullName()</span>
+                                    <i class="bi bi-chevron-down small"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow">
+                                    <li><a class="dropdown-item" href="/Profile"><i class="bi bi-person"></i> My profile</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Log out</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                            <li class="nav-item"><a class="nav-link @Nav("Home")" href="/">Home</a></li>
+                            <li class="nav-item"><a class="nav-link @Nav("Account", "Login")" asp-area="" asp-controller="Account" asp-action="Login">Log in</a></li>
+                            <li class="nav-item"><a class="btn btn-rd-primary btn-sm px-3" asp-area="" asp-controller="Account" asp-action="Register">Sign up free</a></li>
+                        </ul>
+                    }
+                </div>
+            </div>
+        </nav>
+        <div class="rd-stripe" aria-hidden="true"></div>
+    </header>
+
+    <main class="rd-main-top">
+        <div class="container rd-container">
+            <partial name="_Alerts" />
+            @RenderBody()
+        </div>
+    </main>
+    <partial name="_Footer" />
+}
+
+<partial name="_ConfirmModal" />
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+@functions {
+    /// <summary>"active" when the current page belongs to this nav item.</summary>
+    string Nav(string controller, string? action = null, string? exceptAction = null)
+    {
+        var c = ViewContext.RouteData.Values["controller"] as string;
+        var a = ViewContext.RouteData.Values["action"] as string;
+        if (!string.Equals(c, controller, StringComparison.OrdinalIgnoreCase)) return "";
+        if (action != null && !string.Equals(a, action, StringComparison.OrdinalIgnoreCase)) return "";
+        if (exceptAction != null && string.Equals(a, exceptAction, StringComparison.OrdinalIgnoreCase)) return "";
+        return "active";
+    }
+}

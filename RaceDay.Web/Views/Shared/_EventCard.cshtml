@@ -1,0 +1,32 @@
+@model (EventModel Event, bool Enrolled, string Link)
+@{
+    var ev = Model.Event;
+    var img = Ui.MediaUrl(ev.BannerImage);
+}
+<a href="@Model.Link" class="text-decoration-none">
+    <article class="rd-card rd-event-card">
+        <div class="rd-event-img @(img == null ? "rd-no-img" : "")" style="@(img != null ? $"background-image:url('{img}')" : "")">
+            <div class="rd-date-badge"><span class="d">@ev.Date.Day</span><span class="m">@ev.Date.ToString("MMM", Ui.Culture)</span></div>
+            @if (Model.Enrolled)
+            {
+                <span class="rd-ribbon"><i class="bi bi-check2-circle"></i> Enrolled</span>
+            }
+            <i class="bi @Ui.EventTypeIcon(ev.EventType) rd-type-icon"></i>
+        </div>
+        <div class="rd-card-body">
+            <div class="d-flex gap-2 mb-2 flex-wrap">
+                @if (!string.IsNullOrEmpty(ev.EventType)) { <span class="rd-chip rd-chip-orange"><i class="bi @Ui.EventTypeIcon(ev.EventType)"></i> @ev.EventType</span> }
+                @if (ev.DistanceKm.HasValue) { <span class="rd-chip"><i class="bi bi-signpost-2"></i> @Ui.Km(ev.DistanceKm)</span> }
+            </div>
+            <h3 class="rd-event-title mb-2">@ev.Title</h3>
+            <div class="rd-event-meta mb-3">
+                <span><i class="bi bi-calendar3"></i> @Ui.Date(ev.Date) · @Ui.Clock(ev.StartTime)</span>
+                <span><i class="bi bi-geo-alt-fill"></i> @(string.IsNullOrEmpty(ev.City) ? ev.LocationName : $"{ev.LocationName}, {ev.City}")</span>
+            </div>
+            <div class="mt-auto d-flex justify-content-between align-items-center">
+                <span class="small fw-semibold text-orange">@Ui.DaysToGo(ev.Date)</span>
+                <span class="small fw-semibold text-navy">View event <i class="bi bi-arrow-right"></i></span>
+            </div>
+        </div>
+    </article>
+</a>

@@ -1,0 +1,9 @@
+@model (string Kicker, string Title, string? Subtitle)
+<div class="rd-page-header">
+    <div class="rd-kicker">@Model.Kicker</div>
+    <h1 class="rd-h1">@Model.Title</h1>
+    @if (!string.IsNullOrEmpty(Model.Subtitle))
+    {
+        <p class="text-muted mb-0">@Model.Subtitle</p>
+    }
+</div>

@@ -1,0 +1,19 @@
+@{
+    var messages = new[]
+    {
+        (Key: "Success", Css: "alert-success", Icon: "bi-check-circle-fill"),
+        (Key: "Warning", Css: "alert-warning", Icon: "bi-exclamation-triangle-fill"),
+        (Key: "Error", Css: "alert-danger", Icon: "bi-x-octagon-fill")
+    };
+}
+@foreach (var m in messages)
+{
+    if (TempData[m.Key] is string text && !string.IsNullOrWhiteSpace(text))
+    {
+        <div class="alert @m.Css rd-alert alert-dismissible fade show d-flex align-items-start gap-2" role="alert">
+            <i class="bi @m.Icon fs-5 lh-1"></i>
+            <div>@text</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+}

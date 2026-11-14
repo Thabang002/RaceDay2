@@ -1,0 +1,124 @@
+@model EventDetailsViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = ev.Title;
+    var img = Ui.MediaUrl(ev.BannerImage);
+    var available = Model.Categories.Where(c => !c.IsFull).ToList();
+}
+<a href="/Participant/Events" class="small text-muted text-decoration-none d-inline-block mb-2"><i class="bi bi-arrow-left"></i> All events</a>
+
+<div class="rd-banner @(img == null ? "rd-banner-placeholder" : "")" style="min-height:340px;@(img != null ? $"background-image:url('{img}')" : "")">
+    <div class="rd-banner-content">
+        <div class="d-flex flex-wrap gap-2 mb-2">
+            @if (!string.IsNullOrEmpty(ev.EventType)) { <span class="rd-chip rd-chip-lime"><i class="bi @Ui.EventTypeIcon(ev.EventType)"></i> @ev.EventType</span> }
+            @if (ev.DistanceKm.HasValue) { <span class="rd-chip"><i class="bi bi-signpost-2"></i> @Ui.Km(ev.DistanceKm)</span> }
+            <span class="rd-chip rd-chip-orange"><i class="bi bi-stopwatch"></i> @Ui.DaysToGo(ev.Date)</span>
+        </div>
+        <h1 class="rd-h1" style="font-size:clamp(2rem,4.5vw,3.2rem)">@ev.Title</h1>
+        <div class="text-white-50"><i class="bi bi-calendar3"></i> @Ui.Date(ev.Date) · @Ui.Clock(ev.StartTime) &nbsp; <i class="bi bi-geo-alt-fill"></i> @(ev.City is null ? ev.LocationName : $"{ev.LocationName}, {ev.City}")</div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="rd-card mb-4">
+            <div class="rd-card-header"><h2 class="rd-h3">Event information</h2></div>
+            <div class="rd-card-body">
+                <p style="white-space:pre-line">@(string.IsNullOrWhiteSpace(ev.Description) ? "The organiser hasn't added a description yet." : ev.Description)</p>
+                <div class="row g-3 small">
+                    <div class="col-6 col-md-4"><div class="text-muted">Date</div><strong>@Ui.Date(ev.Date)</strong></div>
+                    <div class="col-6 col-md-4"><div class="text-muted">Start time</div><strong>@Ui.Clock(ev.StartTime)</strong></div>
+                    <div class="col-6 col-md-4"><div class="text-muted">Distance</div><strong>@Ui.Km(ev.DistanceKm)</strong></div>
+                    <div class="col-6 col-md-4"><div class="text-muted">Venue</div><strong>@ev.LocationName</strong></div>
+                    <div class="col-6 col-md-4"><div class="text-muted">Organiser</div><strong>@ev.OrganiserName</strong></div>
+                    <div class="col-6 col-md-4"><div class="text-muted">Status</div><partial name="_StatusBadge" model="@ev.Status" /></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rd-card">
+            <div class="rd-card-header"><h2 class="rd-h3">Categories</h2><span class="small text-muted">@Model.Categories.Count available</span></div>
+            @if (!Model.Categories.Any())
+            {
+                <div class="rd-card-body text-muted">Categories haven't been published for this event yet.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table rd-table">
+                        <thead><tr><th>Category</th><th>Distance</th><th>Entry fee</th><th>Places left</th></tr></thead>
+                        <tbody>
+                        @foreach (var c in Model.Categories)
+                        {
+                            <tr>
+                                <td><span class="rd-cell-title">@c.Name</span>@if (!string.IsNullOrEmpty(c.Description)) { <div class="small text-muted">@c.Description</div> }</td>
+                                <td>@Ui.Km(c.DistanceKm)</td>
+                                <td>@Ui.Money(c.StartFee)</td>
+                                <td>@if (c.IsFull) { <span class="rd-status rd-status-cancelled">Full</span> } else { <strong>@c.SpotsLeft</strong><span class="text-muted"> / @c.MaxParticipants</span> }</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="rd-card rd-sticky">
+            @if (Model.MyEnrolment != null)
+            {
+                <div class="rd-card-body text-center">
+                    <div class="rd-empty-icon" style="background:#DCFCE7;color:#16A34A"><i class="bi bi-check2-circle"></i></div>
+                    <h2 class="rd-h2">You're entered!</h2>
+                    <p class="text-muted mb-3">@Model.MyEnrolment.CategoryName · Entry <code>@Model.MyEnrolment.EntryNumber</code></p>
+                    <partial name="_StatusBadge" model="@Model.MyEnrolment.StatusLabel" />
+                    @if (Model.MyEnrolment.StatusLabel == "Pending")
+                    {
+                        <p class="small text-muted mt-3 mb-0">Your place is reserved. The organiser will confirm it once your entry fee is received.</p>
+                    }
+                    <a href="/Participant/Enrolments" class="btn btn-rd-outline w-100 mt-3">View my enrolments</a>
+                </div>
+            }
+            else if (!Model.EnrolmentOpen)
+            {
+                <div class="rd-card-body text-center">
+                    <div class="rd-empty-icon"><i class="bi bi-lock-fill"></i></div>
+                    <h2 class="rd-h2">Entries closed</h2>
+                    <p class="text-muted mb-0">This event is no longer accepting enrolments.</p>
+                </div>
+            }
+            else if (!available.Any())
+            {
+                <div class="rd-card-body text-center">
+                    <div class="rd-empty-icon"><i class="bi bi-people-fill"></i></div>
+                    <h2 class="rd-h2">@(Model.Categories.Any() ? "Sold out" : "Coming soon")</h2>
+                    <p class="text-muted mb-0">@(Model.Categories.Any() ? "All categories are full." : "Entries open once the organiser adds categories.")</p>
+                </div>
+            }
+            else
+            {
+                <form asp-action="Enrol" asp-route-id="@ev.EventId" method="post">
+                    <div class="rd-card-header"><h2 class="rd-h3"><i class="bi bi-ticket-perforated-fill text-orange"></i> Enter this event</h2></div>
+                    <div class="rd-card-body d-flex flex-column gap-2">
+                        <p class="small text-muted mb-1">Choose your category:</p>
+                        @foreach (var c in Model.Categories)
+                        {
+                            <label class="rd-category-option @(c.IsFull ? "disabled" : "")">
+                                <input type="radio" name="categoryId" value="@c.CategoryId" disabled="@c.IsFull" required checked="@(available.Count == 1 && !c.IsFull)" />
+                                <span class="rd-category-box">
+                                    <span><strong class="d-block text-navy">@c.Name</strong><span class="small text-muted">@Ui.Km(c.DistanceKm) · @(c.IsFull ? "Full" : $"{c.SpotsLeft} places left")</span></span>
+                                    <span class="fw-bold text-orange text-nowrap">@Ui.Money(c.StartFee)</span>
+                                </span>
+                            </label>
+                        }
+                    </div>
+                    <div class="rd-card-header border-top border-bottom-0 flex-column align-items-stretch">
+                        <button type="submit" class="btn btn-rd-primary btn-lg"><i class="bi bi-lightning-charge-fill"></i> Enrol now</button>
+                        <span class="small text-muted text-center">Your enrolment is recorded immediately.</span>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>

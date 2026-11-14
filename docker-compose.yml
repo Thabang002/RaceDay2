@@ -1,0 +1,26 @@
+# Start the MVC front end with one command:   docker compose up --build
+# The RaceDay API must be running on the host (Visual Studio, "http" profile -> http://localhost:5163).
+services:
+  raceday-web:
+    build:
+      context: ./RaceDay.Web
+      dockerfile: Dockerfile
+    image: raceday-web:latest
+    container_name: raceday-web
+    ports:
+      - "8080:8080"
+    environment:
+      - Api__BaseUrl=http://host.docker.internal:5163/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # needed on Linux hosts; harmless on Docker Desktop
+    restart: unless-stopped
+
+  # Optional local Blob Storage emulator for the API (instead of a real Azure account):
+  #   docker compose --profile storage up -d azurite
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: raceday-azurite
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --skipApiVersionCheck
+    ports:
+      - "10000:10000"
+    profiles: ["storage"]

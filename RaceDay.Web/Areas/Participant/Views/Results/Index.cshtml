@@ -1,0 +1,67 @@
+@model MyResultsViewModel
+@{
+    ViewData["Title"] = "My results";
+}
+<partial name="_PageHeader" model="@(("Race history", "My results", (string?)"Your finish times and places across every completed event."))" />
+
+@if (!Model.Results.Any())
+{
+    <div class="rd-card rd-empty">
+        <div class="rd-empty-icon"><i class="bi bi-trophy"></i></div>
+        <h2 class="rd-h2">No results yet</h2>
+        <p class="text-muted">Once you've raced and the organiser publishes results, they'll appear here.</p>
+        <a href="/Participant/Events" class="btn btn-rd-primary"><i class="bi bi-search"></i> Find your next race</a>
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="rd-card rd-stat rd-stat-accent h-100"><div class="rd-stat-label">Races completed</div><div class="rd-stat-value">@Model.RacesCompleted</div><div class="rd-stat-icon"><i class="bi bi-flag-fill"></i></div></div></div>
+        <div class="col-md-4"><div class="rd-card rd-stat h-100"><div class="rd-stat-label">Best finish</div><div class="rd-stat-value">@(Model.BestPosition.HasValue ? Ui.Ordinal(Model.BestPosition.Value) : "—")</div><div class="rd-stat-icon"><i class="bi bi-trophy-fill"></i></div></div></div>
+        <div class="col-md-4"><div class="rd-card rd-stat h-100"><div class="rd-stat-label">Distance raced</div><div class="rd-stat-value">@Ui.Km(Model.TotalKm)</div><div class="rd-stat-icon"><i class="bi bi-signpost-2-fill"></i></div></div></div>
+    </div>
+
+    <div class="rd-card">
+        <div class="table-responsive">
+            <table class="table rd-table">
+                <thead><tr><th>Event</th><th>Date</th><th>Category</th><th>Finish time</th><th>Position</th><th>Pace</th></tr></thead>
+                <tbody>
+                @foreach (var r in Model.Results)
+                {
+                    var podium = r.Position is >= 1 and <= 3 ? $"rd-podium-{r.Position}" : "";
+                    <tr>
+                        <td><span class="rd-cell-title">@r.EventTitle</span>@if (!string.IsNullOrEmpty(r.EventType)) { <div class="small text-muted">@r.EventType</div> }</td>
+                        <td class="text-nowrap">@Ui.ShortDate(r.EventDate)</td>
+                        <td><span class="rd-chip">@r.CategoryName</span>@if (r.DistanceKm.HasValue) { <div class="small text-muted mt-1">@Ui.Km(r.DistanceKm)</div> }</td>
+                        <td>
+                            @if (r.FinishTime.HasValue)
+                            {
+                                <span class="rd-time fs-5">@Ui.Time(r.FinishTime)</span>
+                            }
+                            else
+                            {
+                                <partial name="_StatusBadge" model="@(r.Status ?? "No time")" />
+                            }
+                        </td>
+                        <td>
+                            @if (r.Position.HasValue)
+                            {
+                                <div class="rd-position @podium">
+                                    @if (podium != "") { <i class="bi bi-trophy-fill"></i> }
+                                    @Ui.Ordinal(r.Position.Value)
+                                    <small>out of @r.TotalFinishers.ToString("N0", Ui.Culture) finishers</small>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td class="text-nowrap small">@Ui.Pace(r.PacePerKm)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

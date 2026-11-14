@@ -1,0 +1,75 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Create account";
+}
+<div class="rd-card rd-auth">
+    <div class="row g-0">
+        <div class="col-md-5 d-none d-md-block">
+            <div class="rd-auth-side">
+                <div>
+                    <div class="rd-kicker text-white-50">Join the start line</div>
+                    <h2 class="rd-display" style="font-size:2.6rem">Your next<br /><span class="text-orange">PB</span> starts here.</h2>
+                </div>
+                <ul class="list-unstyled mb-0">
+                    <li><i class="bi bi-person-arms-up"></i> <strong>Participants</strong> find races, enrol and see their results.</li>
+                    <li><i class="bi bi-flag-fill"></i> <strong>Organisers</strong> create events, manage entries and publish results.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="rd-card-body p-4 p-lg-5">
+                <h1 class="rd-h1">Create account</h1>
+                <p class="text-muted mb-4">Already registered? <a asp-action="Login">Log in</a></p>
+
+                <form asp-action="Register" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+
+                    <label class="form-label">@Html.DisplayNameFor(m => m.Role)</label>
+                    <div class="row g-2 mb-3 rd-role-picker">
+                        <div class="col-6">
+                            <label class="rd-category-option">
+                                <input type="radio" asp-for="Role" value="Participant" />
+                                <span class="rd-category-box"><i class="bi bi-person-arms-up fs-4 text-orange"></i><strong>Participant</strong><small class="text-muted">I want to race</small></span>
+                            </label>
+                        </div>
+                        <div class="col-6">
+                            <label class="rd-category-option">
+                                <input type="radio" asp-for="Role" value="Organiser" />
+                                <span class="rd-category-box"><i class="bi bi-flag-fill fs-4 text-orange"></i><strong>Organiser</strong><small class="text-muted">I host events</small></span>
+                            </label>
+                        </div>
+                        <span asp-validation-for="Role" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" autocomplete="name" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autocomplete="email" placeholder="you@example.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="ConfirmPassword" class="form-label"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-rd-primary btn-lg w-100"><i class="bi bi-person-plus-fill"></i> Create my account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

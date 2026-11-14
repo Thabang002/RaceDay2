@@ -1,0 +1,108 @@
+@model CategoriesPageViewModel
+@{
+    ViewData["Title"] = "Categories · " + Model.Event.Title;
+    ViewData["Tab"] = "Categories";
+    var presets = new[]
+    {
+        ("5 km", "5"), ("10 km", "10"), ("21.1 km Half", "21.1"), ("42.2 km Full", "42.2"),
+        ("Junior U18", ""), ("Senior 18–39", ""), ("Veteran 40–49", ""), ("Master 50–59", ""), ("Grand Master 60+", "")
+    };
+}
+<partial name="_EventSubNav" model="Model.Event" />
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="rd-card">
+            <div class="rd-card-header">
+                <h2 class="rd-h3">Categories (@Model.Categories.Count)</h2>
+                <span class="small text-muted">Distance or age groups participants choose when enrolling</span>
+            </div>
+            @if (!Model.Categories.Any())
+            {
+                <div class="rd-empty">
+                    <div class="rd-empty-icon"><i class="bi bi-tags"></i></div>
+                    <p class="text-muted mb-0">No categories yet. Add your first one using the form.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table rd-table">
+                        <thead><tr><th>Category</th><th>Distance</th><th>Fee</th><th>Places</th><th class="text-end">Actions</th></tr></thead>
+                        <tbody>
+                        @foreach (var c in Model.Categories)
+                        {
+                            <tr>
+                                <td><span class="rd-cell-title">@c.Name</span>@if (!string.IsNullOrEmpty(c.Description)) { <div class="small text-muted">@c.Description</div> }</td>
+                                <td>@Ui.Km(c.DistanceKm)</td>
+                                <td class="text-nowrap">@Ui.Money(c.StartFee)</td>
+                                <td class="text-nowrap"><strong>@c.EnrolledCount</strong><span class="text-muted">/@c.MaxParticipants</span></td>
+                                <td class="text-end text-nowrap">
+                                    <a href="/Organiser/Categories/Edit/@c.CategoryId" class="btn btn-sm btn-rd-outline btn-icon" title="Edit" aria-label="Edit @c.Name"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="Delete" asp-route-id="@c.CategoryId" asp-route-eventId="@Model.Event.EventId" method="post" class="d-inline"
+                                          data-confirm="Remove the &quot;@c.Name&quot; category?" data-confirm-button="Remove">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-icon" title="Remove" aria-label="Remove @c.Name" disabled="@(c.EnrolledCount > 0)"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-4 pb-3 small text-muted"><i class="bi bi-info-circle"></i> Categories with enrolments can't be removed.</div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <form asp-action="Create" method="post" novalidate class="rd-card rd-sticky">
+            <div class="rd-card-header"><h2 class="rd-h3"><i class="bi bi-plus-circle-fill text-orange"></i> Add a category</h2></div>
+            <div class="rd-card-body">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+                <input type="hidden" asp-for="NewCategory.EventId" />
+
+                <div class="mb-2 small fw-semibold text-muted">Quick fill</div>
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                    @foreach (var (name, dist) in presets)
+                    {
+                        <button type="button" class="rd-chip" data-fill-name="@name" data-fill-distance="@dist">@name</button>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NewCategory.Name" class="form-label"></label>
+                    <input asp-for="NewCategory.Name" class="form-control" data-field="name" placeholder="e.g. 10 km or Veteran 40–49" />
+                    <span asp-validation-for="NewCategory.Name" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="NewCategory.Description" class="form-label"></label>
+                    <input asp-for="NewCategory.Description" class="form-control" placeholder="Optional - e.g. ages 40 to 49 on race day" />
+                </div>
+                <div class="row g-3 mb-1">
+                    <div class="col-6">
+                        <label asp-for="NewCategory.DistanceKm" class="form-label"></label>
+                        <input asp-for="NewCategory.DistanceKm" class="form-control" type="number" step="0.1" min="0" data-field="distance" />
+                        <span asp-validation-for="NewCategory.DistanceKm" class="text-danger"></span>
+                    </div>
+                    <div class="col-6">
+                        <label asp-for="NewCategory.StartFee" class="form-label"></label>
+                        <input asp-for="NewCategory.StartFee" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="NewCategory.StartFee" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="NewCategory.MaxParticipants" class="form-label"></label>
+                        <input asp-for="NewCategory.MaxParticipants" class="form-control" type="number" min="1" />
+                        <span asp-validation-for="NewCategory.MaxParticipants" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="rd-card-header border-top border-bottom-0 justify-content-end">
+                <button type="submit" class="btn btn-rd-primary"><i class="bi bi-plus-lg"></i> Add category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

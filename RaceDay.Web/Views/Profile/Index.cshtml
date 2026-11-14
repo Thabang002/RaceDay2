@@ -1,0 +1,101 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "My profile";
+}
+<partial name="_PageHeader" model="@(("Account", "My profile", (string?)"Keep your details up to date so organisers can reach you on race day."))" />
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="rd-card rd-card-body text-center rd-sticky">
+            <div class="d-flex justify-content-center mb-3">
+                @if (Ui.MediaUrl(Model.ProfilePicture) is string pic)
+                {
+                    <img src="@pic" id="avatarPreview" alt="Profile picture" class="rd-avatar rd-avatar-xl" style="width:140px;height:140px" />
+                }
+                else
+                {
+                    <span class="rd-avatar rd-avatar-initials rd-avatar-xl" style="width:140px;height:140px;font-size:3.2rem">@Ui.Initials(Model.FullName)</span>
+                    <img id="avatarPreview" alt="New profile picture preview" class="rd-avatar rd-avatar-xl d-none ms-2" style="width:140px;height:140px" />
+                }
+            </div>
+            <h2 class="rd-h3 mb-1">@Model.FullName</h2>
+            <div class="mb-2"><span class="rd-chip rd-chip-orange"><i class="bi @(Model.Role == Roles.Organiser ? "bi-flag-fill" : "bi-person-arms-up")"></i> @Model.Role</span></div>
+            <p class="small text-muted">Member since @Ui.ShortDate(Model.MemberSince)</p>
+
+            <div class="rd-divider"></div>
+
+            <form asp-action="UploadPicture" method="post" enctype="multipart/form-data" class="text-start">
+                <label for="picture" class="form-label">Profile picture</label>
+                <input type="file" id="picture" name="picture" class="form-control mb-2" accept="@ImageRules.Accept" data-preview="#avatarPreview" required />
+                <div class="form-text mb-3">JPG, PNG, WEBP or GIF · max 5 MB. Stored securely in the cloud.</div>
+                <button type="submit" class="btn btn-rd-navy w-100"><i class="bi bi-cloud-arrow-up-fill"></i> Upload picture</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <form asp-action="Index" method="post" novalidate class="rd-card">
+            <div class="rd-card-header"><h2 class="rd-h3">Personal information</h2></div>
+            <div class="rd-card-body">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" autocomplete="name" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autocomplete="email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber" class="form-control" autocomplete="tel" placeholder="e.g. 082 123 4567" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DateOfBirth" class="form-label"></label>
+                        <input asp-for="DateOfBirth" class="form-control" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                        <div class="form-text">Used by organisers for age categories.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Gender" class="form-label"></label>
+                        <select asp-for="Gender" class="form-select" asp-items="@(new SelectList(ProfileViewModel.GenderOptions))">
+                            <option value="">Select…</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="City" class="form-label"></label>
+                        <input asp-for="City" class="form-control" autocomplete="address-level2" />
+                        <span asp-validation-for="City" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="rd-divider"></div>
+                <h3 class="rd-h3 mb-1">Change password</h3>
+                <p class="small text-muted">Leave blank to keep your current password.</p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="NewPassword" class="form-label"></label>
+                        <input asp-for="NewPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="NewPassword" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ConfirmPassword" class="form-label"></label>
+                        <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="rd-card-header border-top border-bottom-0 justify-content-end">
+                <button type="submit" class="btn btn-rd-primary"><i class="bi bi-check2-circle"></i> Save changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

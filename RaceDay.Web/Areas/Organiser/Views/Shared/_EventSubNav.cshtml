@@ -1,0 +1,20 @@
+@model EventModel
+@{
+    var active = ViewData["Tab"] as string ?? "";
+    string Css(string tab) => tab == active ? "active" : "";
+}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-2">
+    <div>
+        <a href="/Organiser/Events" class="small text-muted text-decoration-none"><i class="bi bi-arrow-left"></i> My events</a>
+        <h1 class="rd-h1 mt-1">@Model.Title</h1>
+        <div class="text-muted small"><i class="bi bi-calendar3 text-orange"></i> @Ui.Date(Model.Date) · @Ui.Clock(Model.StartTime) &nbsp; <i class="bi bi-geo-alt-fill text-orange"></i> @Model.LocationName</div>
+    </div>
+    <partial name="_StatusBadge" model="@Model.Status" />
+</div>
+<nav class="rd-subnav" aria-label="Event sections">
+    <a class="@Css("Overview")" href="/Organiser/Events/Details/@Model.EventId"><i class="bi bi-grid-1x2"></i> Overview</a>
+    <a class="@Css("Edit")" href="/Organiser/Events/Edit/@Model.EventId"><i class="bi bi-pencil-square"></i> Edit</a>
+    <a class="@Css("Categories")" href="/Organiser/Categories?eventId=@Model.EventId"><i class="bi bi-tags"></i> Categories</a>
+    <a class="@Css("Enrolments")" href="/Organiser/Enrolments?eventId=@Model.EventId"><i class="bi bi-people"></i> Enrolments</a>
+    <a class="@Css("Results")" href="/Organiser/Results?eventId=@Model.EventId"><i class="bi bi-stopwatch"></i> Results</a>
+</nav>
