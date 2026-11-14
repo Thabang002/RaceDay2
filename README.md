@@ -157,3 +157,6 @@ Other changes:
 * If the API is unreachable, the user sees a "couldn't reach the RaceDay service" message instead of a crash.
 * Unhandled exceptions show a branded error page (`/Home/Error`). 404, 403 and other status codes show `/Home/StatusCode`. Raw exception details are never shown.
 * Forms validate on the client (jQuery unobtrusive validation) and again on the server (DataAnnotations). The API then validates everything a third time.
+
+  ## 7. CI workflows
+  ![alt text](https://github.com/Thabang002/RaceDay2/blob/1e84a9599c4d2f931de2473ec8ffd8893a2d502e/Screenshot%202026-11-14%20221526.png)
